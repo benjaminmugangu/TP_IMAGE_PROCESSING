@@ -1,6 +1,9 @@
 # PROJET INTÉGRATEUR : SYSTÈME DE VISION INDUSTRIEL
 ## Reconnaissance et Authentification de Billets en Francs Congolais (CDF)
 ### Master 2 Génie Électrique & Informatique — ULPGL (2025-2026)
+**Auteur :** MUGANGU MUGISHO Benjamin  
+**Enseignant :** Dr. KAMBALE WAMUHINDO Abednego  
+
 
 ---
 

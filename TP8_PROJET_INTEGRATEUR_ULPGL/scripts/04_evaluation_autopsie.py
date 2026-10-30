@@ -2,7 +2,7 @@
 04_evaluation_autopsie.py
 GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
 Projet Integrateur - Etape Evaluation Finale & Autopsie des Erreurs
-Auteur: Master 2 Genie Electrique et Informatique
+Auteur: MUGANGU MUGISHO Benjamin (Master 2 GEI)
 """
 
 import os

@@ -2,7 +2,7 @@
 03_train_cnn_transfer.py
 GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
 Projet Integrateur - Etape Transfer Learning (ResNet18 / MobileNetV2)
-Auteur: Master 2 Genie Electrique et Informatique
+Auteur: MUGANGU MUGISHO Benjamin (Master 2 GEI)
 """
 
 import os

@@ -2,7 +2,7 @@
 01_split_et_hygiene.py
 GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
 Projet Integrateur - Etape Donnees et Hygiene Experimentale
-Auteur: Master 2 Genie Electrique et Informatique
+Auteur: MUGANGU MUGISHO Benjamin (Master 2 GEI)
 """
 
 import os

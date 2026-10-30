@@ -41,8 +41,8 @@ def build_full_notebook(
 # 🎓 PROJET INTÉGRATEUR : SYSTÈME COMPLET DE VISION
 ## Reconnaissance et Authentification Automatisée de Billets de Banque Congolais (CDF)
 
-**Auteur :** Étudiant Master 2 GEI  
-**Enseignant :** Ass. KAMBALE WAMUHINDO Abednego  
+**Auteur :** MUGANGU MUGISHO Benjamin (Master 2 GEI)  
+**Enseignant :** Dr. KAMBALE WAMUHINDO Abednego  
 **Année Académique :** 2025 - 2026  
 **Livrables :** Code Reproductible, Notebook Documenté, Modèle Optimal, Rapport de Synthèse  
 
