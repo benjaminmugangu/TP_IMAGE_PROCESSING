@@ -1,0 +1,14 @@
+{
+    "resnet18_feature_extraction": {
+        "val_acc": 88.88888888888889,
+        "test_acc": 93.61702127659575,
+        "train_time_sec": 372.85575890541077,
+        "trainable_params": 1539
+    },
+    "resnet18_fine_tuning": {
+        "val_acc": 97.77777777777777,
+        "test_acc": 97.87234042553192,
+        "train_time_sec": 613.4364595413208,
+        "trainable_params": 11178051
+    }
+}

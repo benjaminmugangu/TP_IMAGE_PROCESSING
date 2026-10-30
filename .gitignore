@@ -1,0 +1,25 @@
+# Ignorer tous les fichiers et dossiers à la racine
+/*
+
+# Autoriser uniquement les dossiers TP7 et TP8 (Projet Intégrateur) et ce fichier .gitignore
+!/.gitignore
+!/TP7_CNN_CLASSIFICATION_ULPGL/
+!/TP8_PROJET_INTEGRATEUR_ULPGL/
+
+# Dans TP7 et TP8, ignorer les dossiers d'images brutes lourdes (>4000x4000 px, ~800 Mo)
+TP7_CNN_CLASSIFICATION_ULPGL/dataset_billets_clean/
+TP7_CNN_CLASSIFICATION_ULPGL/dataset_split/
+TP8_PROJET_INTEGRATEUR_ULPGL/dataset_split/
+
+# Ignorer les poids lourds binaires (>40 Mo) pour eviter le timeout HTTP 408 sur connexion locale
+*.pth
+*.pt
+
+# Ignorer les caches Python et fichiers temporaires
+**/__pycache__/
+**/*.pyc
+**/.ipynb_checkpoints/
+**/*.aux
+**/*.log
+**/*.out
+**/*.synctex.gz
