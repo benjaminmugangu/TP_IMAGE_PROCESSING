@@ -2,7 +2,7 @@
 03_train_mobilenet_v2.py
 GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
 Projet Integrateur - Etape Transfer Learning avec MobileNetV2
-Auteur: MUGANGU MUGISHO Benjamin (Master 2 GEI)
+Auteur: MUGANGU MUGISHO Benjamin (Master 2 Génie Informatique)
 """
 
 import os

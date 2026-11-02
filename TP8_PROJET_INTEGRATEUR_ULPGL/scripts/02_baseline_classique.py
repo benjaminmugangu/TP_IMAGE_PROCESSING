@@ -2,7 +2,7 @@
 02_baseline_classique.py
 GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
 Projet Integrateur - Etape Baseline Classique (Modules 1 a 4)
-Auteur: MUGANGU MUGISHO Benjamin (Master 2 GEI)
+Auteur: MUGANGU MUGISHO Benjamin (Master 2 Génie Informatique)
 """
 
 import os

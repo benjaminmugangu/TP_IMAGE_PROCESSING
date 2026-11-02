@@ -1,6 +1,6 @@
 # GUIDE MÉTHODOLOGIQUE D'ANNOTATION ET CONTRÔLE QUALITÉ
 ## Projet Intégrateur — Système de Vision pour Billets de Banque Congolais (CDF)
-### ULPGL — Master 2 Génie Électrique & Informatique (GIN522)
+### ULPGL — Master 2 Génie Informatique (GIN522)
 **Auteur :** MUGANGU MUGISHO Benjamin  
 **Enseignant :** Dr. KAMBALE WAMUHINDO Abednego  
 

@@ -67,7 +67,7 @@ def build_executed_notebook():
     # -------------------------------------------------------------------------
     add_md("""# 🎓 TP7 — Réseaux Convolutifs (CNN) : Classification d'Images et Transfert d'Apprentissage
 **Université Libre des Pays des Grands Lacs (ULPGL)** — Faculté des Sciences et Technologies  
-**Master 2 Génie Électrique et Informatique** | Cours : **Traitement d'Images & Deep Learning (GIN522)**  
+**Master 2 Génie Informatique** | Cours : **Traitement d'Images & Deep Learning (GIN522)**  
 **Année Académique :** 2025-2026 | **Module 7 :** CNN et Classification par Transfert  
 **Auteurs :** Équipe de Travaux Pratiques (Version Exécutée)  
 
