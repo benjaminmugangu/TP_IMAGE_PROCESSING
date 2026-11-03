@@ -4,6 +4,7 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\graphicspath{{./}{outputs/}}
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -130,7 +131,7 @@ Pour éviter toute tricherie involontaire du modèle (\textit{data leakage}), no
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\linewidth]{outputs/repartition_donnees.png}
+    \includegraphics[width=0.85\linewidth]{repartition_donnees.png}
     \caption{Répartition équilibrée des données entre Train, Validation et Test.}
     \label{fig:repartition}
 \end{figure}
@@ -160,7 +161,7 @@ Après normalisation des données, nous avons entraîné deux classifieurs class
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{outputs/matrice_confusion_baseline.png}
+    \includegraphics[width=0.7\linewidth]{matrice_confusion_baseline.png}
     \caption{Matrice de confusion de la baseline classique SVM ($89{,}36\,\%$) sur le test.}
     \label{fig:cm_baseline}
 \end{figure}
@@ -202,7 +203,7 @@ L'entraînement a été réalisé sur 15 époques avec l'optimiseur Adam (taux d
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/courbes_apprentissage_cnn.png}
+    \includegraphics[width=0.95\linewidth]{courbes_apprentissage_cnn.png}
     \caption{Courbes d'évolution de la perte (Loss) et de l'exactitude (Accuracy).}
     \label{fig:courbes}
 \end{figure}
@@ -240,7 +241,7 @@ Le CNN obtient un score parfait de **100\,\% d'exactitude** sur l'ensemble de te
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/comparaison_baseline_vs_cnn.png}
+    \includegraphics[width=0.95\linewidth]{comparaison_baseline_vs_cnn.png}
     \caption{Matrice de confusion du CNN ResNet-18 (à gauche) et comparatif avec la baseline (à droite).}
     \label{fig:comparatif_visuel}
 \end{figure}
@@ -250,7 +251,7 @@ Comme le modèle n'a commis aucune erreur sur les 47 images de test, nous avons 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/autopsie_borderline_ou_erreurs.png}
+    \includegraphics[width=0.95\linewidth]{autopsie_borderline_ou_erreurs.png}
     \caption{Inspection des 6 prédictions avec les scores de confiance les plus bas du test.}
     \label{fig:autopsie}
 \end{figure}
@@ -276,7 +277,7 @@ Sur un ordinateur portable standard (testé sur processeur Intel Core i5 sans GP
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{outputs/demo_prediction_live.png}
+    \includegraphics[width=0.7\linewidth]{demo_prediction_live.png}
     \caption{Exemple de prédiction en direct avec score de confiance et temps de calcul.}
     \label{fig:demo}
 \end{figure}

@@ -4,6 +4,7 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\graphicspath{{./}{outputs/}}
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -97,7 +98,7 @@ Pour garantir la rigueur scientifique et éliminer tout risque de \textit{data l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{outputs/grille_verification_billets.png}
+    \includegraphics[width=0.9\linewidth]{grille_verification_billets.png}
     \caption{Exemples d'échantillons du dataset local pour les 3 coupures de billets (50 FC, 500 FC, 1000 FC).}
     \label{fig:grille}
 \end{figure}
@@ -156,7 +157,7 @@ Pour contrer ce phénomène, nous appliquons une politique d'augmentation de don
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/courbes_cnn_avec_sans_augmentation.png}
+    \includegraphics[width=0.95\linewidth]{courbes_cnn_avec_sans_augmentation.png}
     \caption{Courbes d'apprentissage du CNN scratch : sans augmentation (à gauche, fort surapprentissage) vs avec augmentation (à droite, meilleure régularisation).}
     \label{fig:courbes_scratch}
 \end{figure}
@@ -177,7 +178,7 @@ Nous comparons expérimentalement deux approches fondamentales :
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/courbes_resnet18_extraction_vs_finetuning.png}
+    \includegraphics[width=0.95\linewidth]{courbes_resnet18_extraction_vs_finetuning.png}
     \caption{Courbes comparatives : ResNet-18 Feature Extraction (à gauche) vs Fine-Tuning complet (à droite).}
     \label{fig:resnet_curves}
 \end{figure}
@@ -213,7 +214,7 @@ La Figure~\ref{fig:cm_tp7} détaille les prédictions du modèle ResNet-18 en va
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\linewidth]{outputs/matrice_confusion_resnet18_val_test.png}
+    \includegraphics[width=0.85\linewidth]{matrice_confusion_resnet18_val_test.png}
     \caption{Matrice de confusion de ResNet-18 fine-tuné sur le jeu de validation et de test.}
     \label{fig:cm_tp7}
 \end{figure}
@@ -230,7 +231,7 @@ Pour comprendre précisément pourquoi le modèle a hésité sur certains billet
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{outputs/autopsie_12_pires_erreurs.png}
+    \includegraphics[width=0.95\linewidth]{autopsie_12_pires_erreurs.png}
     \caption{Autopsie qualitative des images de billets les plus difficiles du dataset.}
     \label{fig:autopsie_tp7}
 \end{figure}
