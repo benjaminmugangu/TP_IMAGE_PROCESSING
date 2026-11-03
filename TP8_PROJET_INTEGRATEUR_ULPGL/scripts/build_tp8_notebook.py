@@ -1,6 +1,6 @@
 """
 build_tp8_notebook.py
-GIN522 - Vision par Ordinateur & CNN (ULPGL 2025-2026)
+GIN522 - TRAITEMENT D'IMAGES (ULPGL 2025-2026)
 Assembleur du Notebook Jupyter Executable et Interactif pour le Projet Integrateur.
 Integre les resultats reels d'execution, graphiques haute resolution (base64) et metriques.
 Auteur: MUGANGU MUGISHO Benjamin
@@ -110,7 +110,7 @@ def build_full_notebook():
     # ==========================
     add_md("""# UNIVERSITÉ LIBRE DES PAYS DES GRANDS LACS (ULPGL)
 ## Faculté des Sciences et Technologies Appliquées — Master 2 Génie Électrique & Informatique
-### GIN522 : Traitement d'Images, Vision par Ordinateur & CNN
+### GIN522 : Traitement d'Images, TRAITEMENT D'IMAGES
 ---
 # 🎓 PROJET INTÉGRATEUR : SYSTÈME DE VISION INDUSTRIEL
 ## Reconnaissance et Authentification Automatisée de Billets de Banque Congolais (CDF)

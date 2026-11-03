@@ -8,7 +8,7 @@
 ---
 
 ## 📌 Présentation du Projet
-Ce projet répond aux exigences du **Module 8 (Traitement d'Images & Vision par Ordinateur)**. Il développe un système complet et embarquable de reconnaissance automatique des billets de banque circulant en République Démocratique du Congo :
+Ce projet répond aux exigences du **Module 8 (TRAITEMENT D'IMAGES)**. Il développe un système complet et embarquable de reconnaissance automatique des billets de banque circulant en République Démocratique du Congo :
 * **50 FC** (100 images)
 * **500 FC** (106 images)
 * **1000 FC** (100 images)
