@@ -1,17 +1,17 @@
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
-\usepackage[margin=1.5cm]{geometry}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{array}
 \usepackage{float}
-\usepackage{listings}
-\usepackage{caption}
+\usepackage{setspace}
+\usepackage{titlesec}
+
+\onehalfspacing
 
 \hypersetup{
     colorlinks=true,
@@ -20,304 +20,308 @@
     urlcolor=blue!70!black
 }
 
-\title{\vspace{-1.2cm}\textbf{PROJET INTÉGRATEUR : SYSTÈME DE VISION INDUSTRIEL ET EMBARQUÉ}\\\large Reconnaissance et Authentification Automatisée de Billets de Banque Congolais (CDF)}
-\author{\textbf{MUGANGU MUGISHO Benjamin} \\ \small Master 2 Génie Électrique et Informatique \quad|\quad \textbf{Enseignant :} Dr. KAMBALE WAMUHINDO Abednego \\ \small \textbf{Cours :} TRAITEMENT D'IMAGES (GIN522)}
-\date{\vspace{-0.3cm}\small Université Libre des Pays des Grands Lacs (ULPGL) — Faculté des Sciences et Technologies Appliquées — Année académique 2025-2026}
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
 
 \begin{document}
-\maketitle
 
-\begin{abstract}
-Ce projet intégrateur constitue le couronnement pratique et méthodologique du cours de \textbf{TRAITEMENT D'IMAGES (GIN522)} à l'ULPGL. Il mobilise l'ensemble des compétences développées du capteur au déploiement (Modules 1 à 8) pour résoudre une problématique locale et réelle en République Démocratique du Congo : la reconnaissance, le tri et l'authentification automatique des billets de banque en Francs Congolais (50~FC, 500~FC et 1\,000~FC, $N=306$). Face aux contraintes sévères du terrain local (forte usure, froissements, déchirures réparées au ruban adhésif, salissures d'huile et de poussière, éclairages précaires sur les marchés nocturnes et hétérogénéité des capteurs de smartphones), nous formalisons une chaîne complète de traitement d'images et d'apprentissage automatique. 
+% --- Page de Garde ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\large \textbf{UNIVERSITÉ LIBRE DES PAYS DES GRANDS LACS (ULPGL)}}\\[0.3cm]
+    {\large \textbf{FACULTÉ DES SCIENCES ET TECHNOLOGIES APPLIQUÉES}}\\[0.2cm]
+    {\normalsize DÉPARTEMENT DE GÉNIE ÉLECTRIQUE ET INFORMATIQUE}\\[2cm]
 
-Après la rédaction préalable d'un guide méthodologique d'annotation et un découpage stratifié étanche sans aucune fuite d'information ($70\,\% / 15\,\% / 15\,\%$, graine déterministe seed=42), nous concevons d'abord une \textit{baseline} classique rigoureuse combinant moments statistiques RGB, espaces colorimétriques HSV, histogrammes de teinte normalisés et extraction de textures par gradient spatial de Sobel (Modules 1 à 4). Évaluée avec un classifieur SVM à noyau RBF, cette référence classique atteint $89{,}36\,\%$ d'exactitude mais présente une vulnérabilité notable sur la coupure de 1\,000~FC ($20\,\%$ d'oublis). 
+    {\large \textbf{COURS : TRAITEMENT D'IMAGES (GIN522)}}\\[1cm]
 
-Nous mettons ensuite en œuvre un réseau convolutif profond ResNet-18 par transfert d'apprentissage (\textit{Transfer Learning}) à partir d'ImageNet, régularisé par une politique d'augmentation de données ciblée (ColorJitter, recadrages multi-échelles, rotations) et un protocole d'\textit{Early Stopping} strict au minimum de validation loss ($\mathcal{L}_{\text{val}}=0{,}0279$ à l'époque 14). Testé sur un jeu indépendant de 47 photographies non vues en aveugle complet, le modèle CNN surpasse la baseline de $+10{,}64$ points et réalise un score sans faute de $\mathbf{100{,}00\,\%}$ d'exactitude et de Macro-F1. L'analyse d'autopsie des cas limites démontre une marge de certitude moyenne supérieure à $99{,}5\,\%$ dans l'espace latent. Enfin, nous déployons une architecture d'inférence autonome à basse latence ($122{,}2$ ms sur processeur grand public modeste) dotée d'un garde-fou à seuil d'incertitude ($\ge 0{,}60$) garantissant un fonctionnement 100\,\% hors-ligne, éthique et respectueux de la vie privée.
-\end{abstract}
+    \rule{\linewidth}{0.5mm}\\[0.4cm]
+    {\huge \textbf{RAPPORT DE PROJET INTÉGRATEUR}}\\[0.3cm]
+    {\Large \textbf{Système de Reconnaissance et de Tri Automatique de Billets de Banque Congolais (CDF)}}\\[0.2cm]
+    \rule{\linewidth}{0.5mm}\\[2.5cm]
 
-\section{Introduction \& Cadrage du Problème (Semaine 1)}
+    \begin{minipage}{0.45\textwidth}
+        \textbf{Présenté par :}\\
+        MUGANGU MUGISHO Benjamin\\
+        \textit{Étudiant en Master 2 GEI}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushright}
+            \textbf{Enseignant :}\\
+            Dr. KAMBALE WAMUHINDO Abednego\\
+            \textit{Professeur du cours}
+        \end{flushright}
+    \end{minipage}
 
-\subsection{Contexte Économique et Réalité de Terrain en RDC}
-En République Démocratique du Congo (RDC), et particulièrement dans la ville de Goma (Nord-Kivu), l'économie informelle et les transactions commerciales de détail reposent quasi exclusivement sur les paiements en espèces liquides. Les coupures de Francs Congolais (CDF) émises par la Banque Centrale du Congo (BCC) sont soumises à une rotation manuelle particulièrement intense. 
+    \vfill
+    {\normalsize Année Académique 2025 - 2026}\\[0.5cm]
+    {\small Goma, République Démocratique du Congo}
+\end{titlepage}
 
-Les commerçants des marchés vivriers (Birere, Virunga), les changeurs manuels (\textit{chambistes}) et les receveurs de transport en commun manipulent quotidiennement des liasses de billets dans des conditions de salubrité et de luminosité très précaires. Contrairement aux devises occidentales plastifiées ou aux billets neufs de distributeurs automatiques, les billets congolais en circulation présentent des dégradations physiques majeures :
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction et Cadrage du Projet (Semaine 1)}
+
+\subsection{Contexte et motivation}
+En République Démocratique du Congo (RDC), la majorité des échanges commerciaux de proximité s'effectuent en espèces avec les coupures de Francs Congolais (CDF). Dans les commerces, les marchés et les agences de transfert d'argent, le comptage et le tri des billets se font presque entièrement à la main.
+
+Cette manipulation manuelle pose plusieurs problèmes concrets au quotidien :
+\begin{itemize}
+    \item \textbf{Erreurs de caisse et fatigue :} En période de forte affluence, la vérification visuelle répétée entraîne des erreurs de rendu de monnaie.
+    \item \textbf{État physique dégradé des billets :} Les billets en circulation sont souvent très usés, froissés, déchirés ou recollés avec du ruban adhésif, ce qui complique leur identification rapide.
+    \item \textbf{Accessibilité :} Les personnes ayant une déficience visuelle rencontrent de grandes difficultés pour différencier les billets sans assistance extérieure.
+    \item \textbf{Contraintes matérielles locales :} Une solution logicielle utilisable sur le terrain doit pouvoir fonctionner hors-ligne sur du matériel modeste (smartphone classique ou petit boîtier autonome), sans exiger une connexion Internet permanente ni des serveurs distants coûteux.
+\end{itemize}
+
+L'objectif de ce projet intégrateur est de concevoir, d'entraîner et d'évaluer un système de vision par ordinateur capable de reconnaître automatiquement la valeur d'un billet congolais à partir d'une photo prise par un téléphone, tout en restant rapide, fiable et sobre en calcul.
+
+\subsection{Formulation de la tâche de vision}
+Dans le cadre de ce travail, nous traitons le problème sous la forme d'une \textbf{classification d'images supervisée à 3 classes} :
+\begin{itemize}
+    \item \texttt{50\_fc} : Billet de 50 Francs Congolais (dominante marron / ocre).
+    \item \texttt{500\_fc} : Billet de 500 Francs Congolais (dominante bleu ciel).
+    \item \texttt{1000\_fc} : Billet de 1\,000 Francs Congolais (dominante verte et bleu sombre).
+\end{itemize}
+
+L'utilisateur présente le billet devant la caméra, et le modèle doit prédire la classe correspondante avec un score de confiance.
+
+\subsection{Cahier des charges et critères de succès}
+Pour évaluer le système de façon objective, nous avons fixé les critères de réussite suivants :
 \begin{enumerate}
-    \itemsep0em
-    \item \textbf{Usure mécanique avancée :} Billets froissés, écornés, ramollis ou fragmentés avec des jonctions réparées au moyen de ruban adhésif plus ou moins opaque.
-    \item \textbf{Salissures de surface :} Dépôts d'huile de palme, poussière volcanique et suie qui altèrent la réflectance colorimétrique du papier.
-    \item \textbf{Lenteur du comptage manuel :} Risque accru d'erreur humaine lors des heures d'affluence et fatigue cognitive des opérateurs.
-    \item \textbf{Inclusion sociale et accessibilité :} Difficulté majeure d'autonomie financière pour les personnes malvoyantes ou analphabètes ne disposant pas d'outils d'assistance visuelle ou vocale immédiate.
+    \item \textbf{Exactitude globale (Accuracy) $\ge 95\,\%$} sur des images de test que le modèle n'a jamais vues.
+    \item \textbf{Macro-F1 Score $\ge 95\,\%$} pour garantir qu'aucune coupure n'est sacrifiée au profit d'une autre.
+    \item \textbf{Temps de réponse $\le 200$ ms} par image sur un processeur standard (CPU), afin de permettre une utilisation fluide sur mobile.
+    \item \textbf{Mécanisme de sécurité :} Si la certitude du modèle est trop faible ($< 60\,\%$), le système doit alerter l'utilisateur plutôt que d'émettre une prédiction au hasard.
 \end{enumerate}
 
-\subsection{Formulation Formelle de la Tâche de Vision}
-Dans la taxonomie du traitement d'images établie au Module 8, les problèmes d'interprétation visuelle se déclinent en quatre grandes tâches fondamentales :
+\newpage
+\section{Constitution du Dataset et Hygiène Expérimentale (Semaines 2-3)}
+
+\subsection{Description et audit des données}
+Le jeu de données utilisé pour ce projet a été collecté directement sur le terrain à Goma avec différents modèles de smartphones, sous des conditions d'éclairage variées (lumière du jour, intérieur, reflets, ombres portées). Il compte un total de \textbf{306 photographies} réparties de façon équilibrée :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{Classification :} attribuer une étiquette globale $y \in \mathcal{Y}$ à l'image entière (« Qu'y a-t-il ? »).
-    \item \textbf{Détection d'objets :} prédire les boîtes englobantes $(x, y, w, h)$ et les classes associées (« Où et combien ? »).
-    \item \textbf{Segmentation sémantique :} étiqueter chaque pixel individuel par sa classe de tissu/matière (« Quels pixels ? »).
-    \item \textbf{Segmentation d'instance :} individualiser chaque entité géométrique distincte au pixel près.
+    \item \textbf{1000 FC :} 100 images
+    \item \textbf{500 FC :} 106 images
+    \item \textbf{50 FC :} 100 images
 \end{itemize}
 
-Dans le cadre de ce système d'aide au comptage et au tri sur smartphone ou boîte optique dédiée, nous formulons la tâche sous forme d'une \textbf{classification supervisée d'images} à trois classes cibles ($C=3$) :
-$$\mathcal{Y} = \{\text{50\_fc}, \text{500\_fc}, \text{1000\_fc}\}$$
-Chaque prise de vue présente un billet cadré sur un plan de travail, la caméra isolant la face recto ou verso du papier-monnaie.
+Toutes les images sont au format JPEG et disposent de 3 canaux de couleur (RGB). Aucune image n'est corrompue. Les dimensions d'origine varient fortement selon le capteur du smartphone utilisé, allant de $810 \times 810$ pixels à plus de $4\,000 \times 4\,000$ pixels.
 
-\subsection{Cahier des Charges et Critères de Succès Chiffrés}
-Pour sortir du cadre d'un prototype purement académique et répondre aux exigences industrielles du barème (Semaine 1), nous définissons des objectifs métrologiques stricts :
+\subsection{Guide d'annotation et règles de sélection}
+Pour assurer la cohérence de l'étiquetage entre plusieurs personnes, nous avons formalisé un guide d'annotation (\texttt{GUIDE\_ANNOTATION.md}) avant de démarrer le traitement :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{Exactitude globale ($Accuracy$) :} $\ge 95{,}0\,\%$ sur le jeu de test indépendant.
-    \item \textbf{Macro-F1 Score :} $\ge 95{,}0\,\%$ pour s'assurer que la reconnaissance d'une coupure moins fréquente ou plus usée n'est pas pénalisée par les autres.
-    \item \textbf{Sensibilité / Rappel par classe :} $\ge 90{,}0\,\%$ sur chacune des 3 classes pour limiter le risque de perte financière lors des transactions.
-    \item \textbf{Sobriété de calcul et latence :} Temps d'inférence inférieur à $\mathbf{200}$ ms par image sur un processeur standard (CPU), afin de garantir une exécution fluide sur des smartphones d'entrée de gamme sans connexion Internet.
+    \item Le billet doit occuper au moins $70\,\%$ de la surface de l'image.
+    \item Les chiffres indicateurs de valeur (« 50 », « 500 », « 1000 ») ou le portrait principal doivent être identifiables.
+    \item Les billets froissés ou réparés avec du ruban adhésif transparent sont conservés dans le jeu de données pour refléter la réalité du terrain.
+    \item Les images floues au point d'empêcher un être humain de lire le billet sont rejetées.
+    \item Un échantillon témoin de $10\,\%$ des images a été contrôlé en double par deux annotateurs différents, aboutissant à un accord de $100\,\%$.
 \end{itemize}
 
-\section{Données, Annotation \& Hygiène Expérimentale (Semaines 2-3)}
-
-\subsection{Constitution du Jeu de Données Local}
-Le corpus d'apprentissage et de validation a été constitué à partir de prises de vue réelles acquises à Goma au moyen de smartphones variés (capteurs grand angle de 12 à 64 mégapixels). Le dataset comprend un total de \textbf{306 images} réparties selon les trois coupures :
+\subsection{Découpage étanche sans fuite de données (Train / Val / Test)}
+Pour éviter toute tricherie involontaire du modèle (\textit{data leakage}), nous avons fixé une graine aléatoire déterministe (\texttt{seed=42}) et séparé les 306 images en trois dossiers étanches :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{50 FC} ($N=100$ images) : coupure à dominante ocre, marron et orangée, portant les motifs du masque Tshokwe au recto et des pêcheurs au verso.
-    \item \textbf{500 FC} ($N=106$ images) : coupure à dominante bleu ciel, cyan et turquoise, représentant le pont Matadi au recto et des animaux au verso.
-    \item \textbf{1\,000 FC} ($N=100$ images) : coupure à dominante verte, bleu sombre et violette, arborant le perroquet gris du Congo au recto et le maïs au verso.
+    \item \textbf{Train (Entraînement 70\,\%) :} 214 images (70 de 1000 FC, 74 de 500 FC, 70 de 50 FC). Ce dossier sert à ajuster les paramètres du modèle.
+    \item \textbf{Validation (15\,\%) :} 45 images (15 par classe). Ce dossier permet de suivre l'évolution de l'apprentissage après chaque époque et d'arrêter l'entraînement avant le surapprentissage (\textit{early stopping}).
+    \item \textbf{Test (15\,\%) :} 47 images (15 de 1000 FC, 17 de 500 FC, 15 de 50 FC). Ce dossier est gardé totalement secret pendant tout l'entraînement et ne sert qu'à la mesure finale des performances.
 \end{itemize}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.98\linewidth]{outputs/repartition_donnees.png}
-\caption{Répartition stratifiée et équilibrée du jeu de données ($N=306$).}
-\label{fig:repartition}
+    \centering
+    \includegraphics[width=0.85\linewidth]{outputs/repartition_donnees.png}
+    \caption{Répartition équilibrée des données entre Train, Validation et Test.}
+    \label{fig:repartition}
 \end{figure}
 
-L'audit technique automatisé a révélé une disparité extrême de résolutions brutes : les dimensions s'échelonnent de $810 \times 810$ pixels pour les capteurs d'entrée de gamme jusqu'à plus de $4\,128 \times 4\,128$ pixels (17 millions de pixels par image). Cependant, 100\,\% des fichiers sont intègres (aucun fichier JPEG corrompu) et tous opèrent en mode trichrome RGB standard.
+Toutes les images ont été pré-redimensionnées à la taille standard de $224 \times 224$ pixels par interpolation de Lanczos. Cela permet d'accélérer l'apprentissage, d'éviter les saturations de mémoire vive et d'empêcher le modèle de tricher en apprenant la résolution de la caméra au lieu du billet lui-même.
 
-\subsection{Le Guide d'Annotation Formel}
-Conformément aux prescriptions méthodologiques du Module 8 (diapositive 12), un protocole d'annotation ne s'improvise pas au fil de l'eau : il doit être rédigé \textit{a priori} sous forme d'un guide formel (\texttt{GUIDE\_ANNOTATION.md}) afin d'éliminer toute ambiguïté inter-opérateurs :
-\begin{itemize}
-    \itemsep0em
-    \item \textbf{Règle de surface minimale :} Le billet doit présenter au minimum $70\,\%$ de son emprise géométrique dans le champ de la caméra pour être validé.
-    \item \textbf{Visibilité des descripteurs clés :} Au moins un identifiant numérique (« 50 », « 500 », « 1000 ») ou le portrait/monument principal doit être dégagé.
-    \item \textbf{Gestion des réparations :} Les billets recollés avec du ruban adhésif transparent sont explicitement admis pour représenter le terrain local. Si le ruban est opaque et masque complètement le chiffre et le motif central, l'échantillon est exclu.
-    \item \textbf{Contrôle qualité en double aveugle :} Un lot témoin de $10\,\%$ des images a été étiqueté indépendamment par deux annotateurs distincts ; l'accord obtenu est de $100\,\%$.
-\end{itemize}
+\newpage
+\section{Baseline Classique : Couleurs et Textures (Semaine 4)}
 
-\subsection{Hygiène Expérimentale et Prévention des Fuites}
-Le piège mortel en vision par ordinateur réside dans la fuite d'information (\textit{Data Leakage}). Si deux clichés successifs du même billet physique sous un angle quasi identique se retrouvent l'un dans l'ensemble d'entraînement et l'autre dans l'ensemble de test, le modèle sur-apprend le bruit de capteur ou une déchirure locale particulière, donnant l'illusion trompeuse d'une performance parfaite.
+\subsection{Principe de la baseline}
+En ingénierie, il est essentiel d'établir un point de comparaison simple avant d'utiliser un modèle complexe de deep learning. Si une méthode basique basée sur les couleurs donne déjà de très bons résultats, il faut vérifier si la complexité d'un réseau de neurones est réellement justifiée.
 
-Pour conjurer ce biais, les partitions ont été scellées de manière strictement déterministe grâce à une graine aléatoire fixée (\texttt{seed=42}) :
-\begin{itemize}
-    \itemsep0em
-    \item \textbf{Train (Entraînement 70\,\%) :} 214 images ($70$ de 1000~FC, $74$ de 500~FC, $70$ de 50~FC).
-    \item \textbf{Validation (15\,\%) :} 45 images ($15$ par classe) servant au monitoring des époques et à l'\textit{Early Stopping}.
-    \item \textbf{Test (15\,\%) :} 47 images ($15$ de 1000~FC, $17$ de 500~FC, $15$ de 50~FC), strictement sanctuarisées dans un « coffre-fort » jusqu'à l'évaluation finale.
-\end{itemize}
-
-Toutes les images ont été pré-redimensionnées de manière standardisée à $224 \times 224$ pixels par interpolation de Lanczos haute fidélité (dossier \texttt{dataset\_split\_224/}), éliminant ainsi le risque que le réseau n'apprenne la résolution de la caméra comme variable explicative parasite.
-
-\section{La Baseline Classique : Descripteurs Handcrafted (Semaine 4)}
-
-\subsection{Fondements Théoriques (Modules 1 à 4)}
-Le principe fondamental de la démarche d'ingénieur en vision est qu'\textbf{aucune méthode lourde d'apprentissage profond ne doit être déployée sans avoir été confrontée à une solution classique simple}. 
-
-Avant l'avènement des CNN, les images étaient traitées par extraction explicite de caractéristiques numériques inspirées de la physique du signal :
+Pour construire cette baseline (Modules 1 à 4), nous avons extrait pour chaque image un vecteur de \textbf{30 caractéristiques classiques} :
 \begin{enumerate}
-    \itemsep0em
-    \item \textbf{Moments de couleur RGB (Module 1) :} Pour chaque canal $c \in \{R, G, B\}$, calcul de l'espérance $\mu_c = \frac{1}{HW}\sum_{i,j} I_c(i,j)$ et de l'écart-type $\sigma_c = \sqrt{\frac{1}{HW}\sum_{i,j} (I_c(i,j) - \mu_c)^2}$, fournissant 6 descripteurs statistiques.
-    \item \textbf{Espace colorimétrique HSV (Module 1) :} Conversion non-linéaire vers l'espace Teinte-Saturation-Valeur. La teinte $H \in [0, 180^\circ]$ encode la couleur spectrale pure indépendamment de l'énergie lumineuse $V$. Calcul des moyennes et écarts-types (6 descripteurs).
-    \item \textbf{Histogramme de Teinte $H$ (Module 1) :} Discrétisation du spectre chromatique en 16 compartiments (\textit{bins}) normalisés sous contrainte $\sum_{k=1}^{16} h_k = 1$ (16 descripteurs).
-    \item \textbf{Gradient spatial et Textures de Sobel (Modules 2 et 3) :} Application des masques de convolution directionnels $S_x$ et $S_y$ pour estimer le champ de gradient :
-    $$|\nabla I| = \sqrt{(I * S_x)^2 + (I * S_y)^2}$$
-    La moyenne et la variance de ce gradient mesurent la densité des guilloches, chiffres et arêtes imprimées (2 descripteurs).
+    \item \textbf{Statistiques RGB (6 descripteurs) :} Moyenne et écart-type des pixels pour chacun des canaux Rouge, Vert et Bleu.
+    \item \textbf{Statistiques HSV (6 descripteurs) :} Moyenne et écart-type dans l'espace Teinte (H), Saturation (S) et Valeur (V).
+    \item \textbf{Histogramme de teinte H (16 descripteurs) :} Répartition de la couleur pure sur 16 intervalles normalisés.
+    \item \textbf{Textures de Sobel (2 descripteurs) :} Moyenne et écart-type de la norme du gradient spatial, qui mesurent la quantité de contours et de motifs présents sur le billet.
 \end{enumerate}
 
-Chaque photographie est ainsi convertie en un vecteur compact de caractéristiques physiques :
-$$\mathbf{x} \in \mathbb{R}^{30} = [\boldsymbol{\mu}_{\text{RGB}}, \boldsymbol{\sigma}_{\text{RGB}}, \boldsymbol{\mu}_{\text{HSV}}, \boldsymbol{\sigma}_{\text{HSV}}, \mathbf{h}_H, \mu_{|\nabla|}, \sigma_{|\nabla|}]$$
-
-\subsection{Entraînement des Classifieurs Classiques}
-Les descripteurs sont centrés et réduits par normalisation $z$-score ($\mu=0, \sigma=1$) ajustée exclusivement sur le train. Deux modèles emblématiques du machine learning classique ont été entraînés :
+\subsection{Résultats des modèles classiques}
+Après normalisation des données, nous avons entraîné deux classifieurs classiques sur le jeu d'entraînement et mesuré leurs résultats sur les 47 images de test :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{$k$-Nearest Neighbors ($k$-NN, $k=5$) :} classification non-paramétrique par vote majoritaire des 5 plus proches voisins dans l'espace euclidien.
-    \item \textbf{Support Vector Machines (SVM RBF) :} séparation par hyperplan optimal dans un espace hilbertien induit par le noyau gaussien radial $K(\mathbf{x}, \mathbf{x}') = \exp(-\gamma \|\mathbf{x} - \mathbf{x}'\|^2)$, avec régularisation $C=1{,}0$.
-\end{itemize}
-
-\subsection{Performances et Limites de la Baseline}
-Les résultats mesurés sur les 47 images de test inconnues s'établissent comme suit :
-\begin{itemize}
-    \itemsep0em
-    \item \textbf{$k$-NN ($k=5$) :} Accuracy = $85{,}11\,\%$, Macro-F1 = $84{,}46\,\%$.
-    \item \textbf{SVM (RBF) :} Accuracy = $\mathbf{89{,}36\,\%}$, Macro-F1 = $\mathbf{89{,}16\,\%}$.
+    \item \textbf{$k$-NN ($k=5$) :} Accuracy = $85{,}11\,\%$ | Macro-F1 = $84{,}46\,\%$.
+    \item \textbf{SVM (noyau RBF, $C=1{,}0$) :} Accuracy = $\mathbf{89{,}36\,\%}$ | Macro-F1 = $\mathbf{89{,}16\,\%}$.
 \end{itemize}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.88\linewidth]{outputs/matrice_confusion_baseline.png}
-\caption{Matrice de confusion de la baseline classique SVM ($89{,}36\,\%$).}
-\label{fig:cm_base}
+    \centering
+    \includegraphics[width=0.7\linewidth]{outputs/matrice_confusion_baseline.png}
+    \caption{Matrice de confusion de la baseline classique SVM ($89{,}36\,\%$) sur le test.}
+    \label{fig:cm_baseline}
 \end{figure}
 
-L'examen attentif de la matrice de confusion (Figure~\ref{fig:cm_base}) révèle la pathologie exacte de la baseline : sur 15 billets de 1\,000~FC réels, le SVM en manque 3 ($20\,\%$ de faux rejets), les classant à tort comme 500~FC. En conditions de faible éclairage, la teinte bleu-vert sombre du billet de 1\,000~FC se confond chromatiquement avec la patine usée du 500~FC. Un classifieur purement global sur les couleurs atteint ici son plafond de verre, justifiant sans équivoque le passage à un modèle d'apprentissage hiérarchique profond.
+\subsection{Analyse des faiblesses de la baseline}
+Comme le montre la matrice de confusion (Figure~\ref{fig:cm_baseline}), le SVM obtient de bons résultats globaux ($89{,}36\,\%$), mais il commet des erreurs importantes :
+\begin{itemize}
+    \item Sur 15 billets de 1\,000 FC de test, le SVM en rate 3 (soit $20\,\%$ d'erreurs), qu'il prend pour des 500 FC.
+    \item Sur le terrain, un billet de 1\,000 FC usé et sombre prend une teinte bleutée proche de celle du 500 FC. L'histogramme de couleur global ne suffit donc pas à lever le doute.
+\end{itemize}
 
+Cette limite démontre la nécessité d'utiliser un réseau de neurones convolutif capable d'analyser à la fois la couleur, les portraits et les chiffres imprimés.
+
+\newpage
 \section{Modèle CNN par Transfer Learning (Semaines 5-6)}
 
-\subsection{Pourquoi le Transfert d'Apprentissage ?}
-Un réseau de neurones convolutif moderne tel que ResNet-18 comprend plus de \textbf{11,7 millions de paramètres libres} (poids synaptiques et biais). Entraîner une telle architecture « de zéro » (\textit{from scratch}) avec une initialisation aléatoire des poids sur seulement 214 images d'entraînement aboutit inévitablement à un sur-apprentissage destructeur : le modèle mémorise le bruit exact des pixels de chaque image et s'effondre en généralisation.
+\subsection{Choix de l'architecture et Transfer Learning}
+Entraîner un réseau de neurones à partir de zéro avec seulement 214 images d'entraînement conduirait immédiatement à du surapprentissage (le modèle apprendrait les images par cœur sans être capable de généraliser).
 
-Le \textit{Transfer Learning} résout élégamment ce problème en exploitant les représentations apprises par le réseau lors de son pré-entraînement massif sur la base ImageNet-1k (1,4 million d'images naturelles). Les premières couches convolutives agissent comme un extracteur universel de primitives visuelles (filtres de Gabor, gradients, courbures, textures fines). Il suffit d'adapter les dernières couches pour spécialiser le réseau sur notre tâche cible.
+Pour résoudre ce problème, nous utilisons le **Transfer Learning** (Modules 7 et 8). Nous partons d'un réseau **ResNet-18** pré-entraîné sur la grande base de données ImageNet (1,4 million d'images). Ce réseau sait déjà reconnaître les lignes, les coins, les contrastes et les formes géométriques.
 
-\subsection{Architecture et Adaptation de la Tête}
-Nous employons l'architecture ResNet-18 (réseau résiduel à 18 couches) :
+Nous adaptons simplement la dernière couche (la tête de classification) pour notre problème :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{Corps résiduel (\textit{Backbone}) :} Blocs résiduels avec connexions de saut (\textit{skip connections}) $F(x) + x$ neutralisant l'évanouissement du gradient et extrayant un tenseur de 512 dimensions après la couche de pooling moyen global.
-    \item \textbf{Tête personnalisée (\textit{Classifier}) :} La couche entièrement connectée originale à 1\,000 sorties est remplacée par un module spécifique :
-    $$\mathbf{y}_{\text{logits}} = \mathbf{W}_2 \cdot \text{Dropout}_{p=0.3}(\mathbf{x}_{512}) + \mathbf{b}_2$$
-    où $\mathbf{W}_2 \in \mathbb{R}^{3 \times 512}$ projette l'espace latent vers nos 3 classes de billets.
+    \item Couche de régularisation \texttt{Dropout(p=0.3)} pour limiter le surapprentissage.
+    \item Couche linéaire finale à 3 sorties correspondant exactement à nos 3 coupures congolaises (50 FC, 500 FC, 1000 FC).
 \end{itemize}
 
-\subsection{Stratégie d'Augmentation de Données Terrain}
-Pour immuniser le réseau contre les variations réelles observées sur les marchés de Goma, un pipeline d'augmentation stochastique à la volée est appliqué pendant l'entraînement :
+\subsection{Augmentation de données (Data Augmentation)}
+Pour rendre le modèle robuste aux conditions réelles de manipulation des billets, nous appliquons des transformations aléatoires pendant l'entraînement :
 \begin{itemize}
-    \itemsep0em
-    \item \texttt{RandomResizedCrop(224, scale=(0.85, 1.0))} : simule les variations de distance et de cadrage de l'opérateur.
-    \item \texttt{RandomRotation(degrees=15)} : simule l'inclinaison manuelle du billet lors de la présentation devant l'objectif.
-    \item \texttt{RandomHorizontalFlip(p=0.5)} : apprend l'invariance par retournement recto/verso.
-    \item \texttt{ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2)} : perturbe artificiellement la luminosité et la colorimétrie pour simuler les ambiances d'éclairage nocturne (lampes torches ou néons).
+    \item Recadrages et variations d'échelle (\texttt{RandomResizedCrop}, échelle 0.85 à 1.0).
+    \item Petites rotations (\texttt{RandomRotation}, $\pm 15^\circ$) pour simuler un billet tenu de travers.
+    \item Retournements horizontaux (\texttt{RandomHorizontalFlip}, $p=0.5$).
+    \item Variations de lumière et de contraste (\texttt{ColorJitter}, $\pm 20\,\%$) pour simuler un éclairage faible ou une lumière jaune en fin de journée.
 \end{itemize}
 
-\subsection{Convergence et Checkpointing Optimal}
-L'optimisation a été conduite avec l'algorithme Adam ($\eta = 10^{-4}$, pénalisation $L_2$ \textit{weight decay} $= 10^{-4}$) et une fonction de coût d'entropie croisée multi-classes :
-$$\mathcal{L}_{\text{CE}} = - \frac{1}{B} \sum_{i=1}^B \log\left(\frac{e^{z_{y_i}}}{\sum_{c=1}^C e^{z_c}}\right)$$
+\subsection{Entraînement et arrêt optimal (Early Stopping)}
+L'entraînement a été réalisé sur 15 époques avec l'optimiseur Adam (taux d'apprentissage $\eta = 10^{-4}$ et pénalité $L_2 = 10^{-4}$).
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.98\linewidth]{outputs/courbes_apprentissage_cnn.png}
-\caption{Courbes d'apprentissage de ResNet-18 sur 15 époques.}
-\label{fig:courbes}
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/courbes_apprentissage_cnn.png}
+    \caption{Courbes d'évolution de la perte (Loss) et de l'exactitude (Accuracy).}
+    \label{fig:courbes}
 \end{figure}
 
-Comme l'illustre la Figure~\ref{fig:courbes}, la convergence est spectaculaire :
+Les courbes d'apprentissage (Figure~\ref{fig:courbes}) montrent une convergence très rapide :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{Époque 1 :} Train Loss = $0{,}6744$ (Acc = $72{,}4\,\%$) | Val Loss = $0{,}5463$ (Acc = $73{,}3\,\%$).
-    \item \textbf{Époque 4 :} Val Loss chute à $0{,}0581$ avec une exactitude de validation de $97{,}8\,\%$.
-    \item \textbf{Époque 14 :} Atteinte du minimum absolu de validation : $\mathcal{L}_{\text{val}} = \mathbf{0{,}0279}$ et Exactitude Val = $\mathbf{100{,}00\,\%}$.
+    \item Dès l'époque 4, la perte de validation descend sous 0,06 et l'exactitude dépasse $97\,\%$.
+    \item À l'\textbf{époque 14}, la perte de validation atteint son niveau le plus bas ($\mathcal{L}_{\text{val}} = 0{,}0279$) avec une exactitude de validation de $100\,\%$.
+    \item Les poids du modèle de l'époque 14 ont été automatiquement sauvegardés dans le fichier \texttt{models/best\_resnet18\_billets.pth}.
 \end{itemize}
-Conformément au principe d'\textit{Early Stopping}, le script sauvegarde automatiquement les poids optimaux de cette époque 14 (\texttt{best\_resnet18\_billets.pth}), écartant tout risque de sur-apprentissage lié aux époques ultérieures.
 
-\section{Évaluation Honnête \& Autopsie Critique (Semaine 7)}
+\newpage
+\section{Évaluation Finale et Autopsie d'Erreurs (Semaine 7)}
 
-\subsection{Évaluation en Aveugle sur le Jeu de Test}
-Le modèle final a été soumis aux 47 images du jeu de test scellé. Les performances obtenues sont consignées dans le Tableau~\ref{tab:resultats_complets}.
+\subsection{Résultats sur le jeu de test indépendant}
+Une fois l'entraînement terminé, le modèle optimal a été évalué sur les 47 images du jeu de test (jamais vues pendant l'apprentissage).
+
+Le Tableau~\ref{tab:comparatif} présente le comparatif direct entre la meilleure baseline classique (SVM) et le CNN ResNet-18 :
 
 \begin{table}[H]
-\centering
-\small
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Modèle / Coupure} & \textbf{Support} & \textbf{Préc.} & \textbf{Rappel} & \textbf{F1} & \textbf{Latence} \\
-\midrule
-\textbf{Baseline (SVM RBF)} & & & & & \\
-1000 FC & 15 & $92{,}3\,\%$ & $80{,}0\,\%$ & $0{,}86$ & — \\
-500 FC  & 17 & $88{,}9\,\%$ & $94{,}1\,\%$ & $0{,}91$ & — \\
-50 FC   & 15 & $87{,}5\,\%$ & $93{,}3\,\%$ & $0{,}90$ & — \\
-\textit{Moyenne Baseline} & \textbf{47} & $\mathbf{89{,}6\,\%}$ & $\mathbf{89{,}1\,\%}$ & $\mathbf{0{,}89}$ & $\mathbf{\approx 2}$ \textbf{ms} \\
-\midrule
-\textbf{CNN (ResNet-18)} & & & & & \\
-1000 FC & 15 & $100\,\%$ & $100\,\%$ & $1{,}00$ & — \\
-500 FC  & 17 & $100\,\%$ & $100\,\%$ & $1{,}00$ & — \\
-50 FC   & 15 & $100\,\%$ & $100\,\%$ & $1{,}00$ & — \\
-\textit{Moyenne CNN} & \textbf{47} & $\mathbf{100\,\%}$ & $\mathbf{100\,\%}$ & $\mathbf{1{,}00}$ & $\mathbf{122{,}2}$ \textbf{ms} \\
-\bottomrule
-\end{tabular}
-\caption{Comparatif complet des métriques sur le jeu de test indépendant.}
-\label{tab:resultats_complets}
+    \centering
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Modèle} & \textbf{Exactitude (Accuracy)} & \textbf{Macro-F1} & \textbf{Temps d'inférence} & \textbf{Taille fichier} \\
+        \midrule
+        Baseline (SVM RBF) & $89{,}36\,\%$ & $89{,}16\,\%$ & $\approx 2$ ms & $< 1$ Mo \\
+        \textbf{CNN (ResNet-18)} & $\mathbf{100{,}00\,\%}$ & $\mathbf{100{,}00\,\%}$ & $\mathbf{122{,}2}$ \textbf{ms} & $\mathbf{44{,}8}$ \textbf{Mo} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparaison des performances globales sur les 47 images de test.}
+    \label{tab:comparatif}
 \end{table}
 
-Le modèle ResNet-18 réalise un score parfait de \textbf{100\,\% d'exactitude} sur les 47 images de test, procurant un gain net de $\mathbf{+10{,}64}$ points de pourcentage par rapport à la meilleure baseline classique.
+Le CNN obtient un score parfait de **100\,\% d'exactitude** sur l'ensemble de test, soit un gain net de **$+10{,}64$ points** par rapport au SVM. Les confusions observées précédemment entre le billet de 1\,000 FC et celui de 500 FC ont été totalement éliminées.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.98\linewidth]{outputs/comparaison_baseline_vs_cnn.png}
-\caption{Matrice de confusion ResNet-18 et comparatif barplot.}
-\label{fig:comparatif}
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/comparaison_baseline_vs_cnn.png}
+    \caption{Matrice de confusion du CNN ResNet-18 (à gauche) et comparatif avec la baseline (à droite).}
+    \label{fig:comparatif_visuel}
 \end{figure}
 
-\subsection{Autopsie Critique des Cas Limites}
-Une démarche scientifique rigoureuse ne s'arrête pas à la constatation d'un score de 100\,\%. En l'absence d'erreurs réelles ($0/47$), nous avons procédé à l'autopsie des \textbf{6 images présentant les scores de confiance les plus faibles} (cas limites).
+\subsection{Autopsie des cas limites (confiances les plus faibles)}
+Comme le modèle n'a commis aucune erreur sur les 47 images de test, nous avons extrait les 6 images pour lesquelles le réseau avait la certitude la plus basse, afin de vérifier son comportement sur les cas difficiles.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.98\linewidth]{outputs/autopsie_borderline_ou_erreurs.png}
-\caption{Planche d'autopsie des 6 cas limites à confiance minimale.}
-\label{fig:autopsie}
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/autopsie_borderline_ou_erreurs.png}
+    \caption{Inspection des 6 prédictions avec les scores de confiance les plus bas du test.}
+    \label{fig:autopsie}
 \end{figure}
 
-L'analyse de la Figure~\ref{fig:autopsie} montre que même sur les photographies les plus sombres ou présentant des pliures transversales prononcées, le score softmax prédit reste supérieur à \textbf{99,5\,\%}. Cette régularité confirme que le réseau convolutif ne se contente pas d'interpoler des teintes : il s'appuie conjointement sur la topologie des chiffres d'angle et les représentations sémantiques des gravures.
+L'inspection visuelle (Figure~\ref{fig:autopsie}) montre que même pour les billets les plus sombres ou photographiés avec des reflets, la certitude prédite par le modèle reste supérieure à **$99{,}5\,\%$**. Le modèle démontre donc une séparation très nette entre les trois classes.
 
-\section{Déploiement \& Démonstration Live (Semaine 8)}
+\newpage
+\section{Déploiement en Temps Réel et Démonstration (Semaine 8)}
 
-\subsection{Pipeline d'Inférence et Temps de Calcul}
-Le script autonome de déploiement (\texttt{05\_pipeline\_deploiement.py}) implémente la classe \texttt{BanknoteClassifier} conçue pour un fonctionnement en flux temps réel :
+\subsection{Pipeline d'inférence}
+Pour permettre l'utilisation pratique du modèle, nous avons créé un script autonome d'inférence (\texttt{05\_pipeline\_deploiement.py}). 
+
+Lorsqu'une nouvelle image lui est fournie, le script réalise les étapes suivantes :
 \begin{enumerate}
-    \itemsep0em
-    \item Acquisition de l'image (flux caméra ou fichier).
-    \item Normalisation géométrique ($224\times 224$) et centrage ImageNet.
-    \item Passe avant (\textit{forward pass}) sur GPU ou CPU.
-    \item Calcul du vecteur de probabilités via Softmax :
-    $$P(Y = c \mid \mathbf{x}) = \frac{e^{z_c}}{\sum_{j=1}^3 e^{z_j}}$$
+    \item Chargement de l'image et redimensionnement à $224 \times 224$ pixels.
+    \item Normalisation des canaux de couleur selon les paramètres ImageNet.
+    \item Calcul des probabilités de sortie via la fonction Softmax.
+    \item Mesure de la certitude et du temps de calcul.
+    \item Génération d'une image annotée avec le résultat.
 \end{enumerate}
 
-Sur le processeur standard de test (Intel CPU), la latence d'inférence mesurée est de $\mathbf{122{,}2}$ ms par image, ce qui autorise un cadencement d'environ 8 images par seconde, largement compatible avec les besoins d'un guichet de paiement.
+Sur un ordinateur portable standard (testé sur processeur Intel Core i5 sans GPU), le temps moyen d'inférence est de **$122{,}2$ ms par image**. Ce résultat respecte parfaitement le cahier des charges ($< 200$ ms) et permet d'analyser environ 8 images par seconde.
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.88\linewidth]{outputs/demo_prediction_live.png}
-\caption{Visualisation de l'inférence temps réel avec bandeau décisionnel.}
-\label{fig:demo}
+    \centering
+    \includegraphics[width=0.7\linewidth]{outputs/demo_prediction_live.png}
+    \caption{Exemple de prédiction en direct avec score de confiance et temps de calcul.}
+    \label{fig:demo}
 \end{figure}
 
-\subsection{Mécanisme de Sécurité Métier : Seuil de Rejet}
-Dans un système d'authentification monétaire, émettre une décision erronée avec une confiance médiocre est inacceptable. Nous avons donc intégré une fonction de décision avec option de rejet :
-$$\text{Verdict} = \begin{cases}
-\arg\max_c P(Y=c) & \text{si } \max P(Y=c) \ge \tau \\
-\textbf{ALERTE : Billet douteux / Repositionner} & \text{si } \max P(Y=c) < \tau
-\end{cases}$$
-En fixant le seuil de tolérance à $\tau = 0{,}60$ ($60\,\%$), le système élimine les faux positifs induits par des corps étrangers (mains, morceaux de papier, emballages) présentés devant l'objectif.
-
-\section{Limites, Éthique \& Usages Responsables}
-
-Conformément à la grille de notation officielle du cours (diapositive 13 \& 24), tout rapport d'ingénieur doit comporter une analyse lucide de ses limites opérationnelles et sociétales :
-
-\subsection{Le Phénomène de Dérive de Domaine (Domain Shift)}
-Bien que le modèle atteigne 100\,\% sur notre jeu de test, cette performance est conditionnée par la distribution des données de collecte. Sur le terrain réel, le système sera confronté au \textit{Domain Shift} :
+\subsection{Garde-fou : Option de rejet en cas de doute}
+Pour éviter les erreurs grossières si un utilisateur présente un billet trop abîmé, un papier ordinaire ou un objet quelconque, nous avons inclus une règle de sécurité dans le code :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{Dérive saisonnière et éclairage :} Prises de vue sous des éclairages de lampes à pétrole ou à basse tension dans les quartiers périphériques non électrifiés.
-    \item \textbf{Usure extrême :} Billets coupés en deux et recollés avec du ruban adhésif opaque couvrant les portraits officiels.
-    \item \textbf{Remède préconisé :} Mise en place d'une procédure d'\textit{Active Learning} où les billets ayant déclenché une alerte d'incertitude sont collectés et réinjectés trimestriellement dans le jeu d'entraînement.
+    \item Si la certitude maximale dépasse **$60\,\%$**, la prédiction est acceptée et validée (bandeau vert).
+    \item Si la certitude est inférieure à **$60\,\%$**, le système n'émet pas de prédiction au hasard et affiche une alerte invitant l'utilisateur à replacer le billet sous un meilleur éclairage (bandeau rouge).
 \end{itemize}
 
-\subsection{Distinction Critique : Reconnaissance vs Détection de Faux Billets}
-Une clarification éthique et légale majeure s'impose : \textbf{ce modèle est un classifieur de coupures et en aucun cas un détecteur de fausse monnaie}. Un faux billet imprimé sur papier ordinaire reproduisant l'apparence visuelle d'un 1\,000~FC sera classé à 100\,\% comme un billet authentique par le CNN. L'authentification bancaire réclame des capteurs optiques spécifiques hors du spectre visible :
+\newpage
+\section{Limites, Éthique et Usages Responsables}
+
+Conformément aux exigences du cours de Traitement d'Images (diapositives 13 et 24 du Module 8), un travail d'ingénieur doit comporter une analyse honnête des limites pratiques de la solution proposée.
+
+\subsection{Dérive de domaine (Domain Shift)}
+Les $100\,\%$ de réussite obtenus sur notre jeu de test ne signifient pas que le modèle ne fera jamais d'erreur dans le monde réel. Sur les marchés de Goma, le système sera confronté au phénomène de \textbf{Domain Shift} :
 \begin{itemize}
-    \item Capteurs ultraviolets (UV) pour exciter les fibres fluorescentes incorporées dans la pâte à papier.
-    \item Capteurs infrarouges (IR) pour révéler les encres métamères invisibles à l'œil nu.
-    \item Têtes magnétiques pour vérifier les fils de sécurité réactifs.
+    \item \textbf{Éclairages extrêmes :} Éclairage à la bougie, lampe torche ou pénombre totale des étals en soirée.
+    \item \textbf{Dégradations sévères :} Billets déchirés en deux et recollés avec du ruban adhésif opaque qui masque les portraits ou les chiffres officiels.
+    \item \textbf{Salissures importantes :} Billets maculés d'huile de palme, de terre ou d'encre.
+\end{itemize}
+Pour maintenir les performances du système dans le temps, il sera nécessaire d'adopter une stratégie d'\textit{Active Learning} consistant à collecter régulièrement les images qui déclenchent l'alerte d'incertitude pour réentraîner le modèle périodiquement.
+
+\subsection{Différence entre reconnaissance et authentification de faux billets}
+Il est capital de préciser clairement que \textbf{ce modèle est un outil d'aide à la reconnaissance des coupures, et non un détecteur de fausse monnaie}.
+
+Un réseau de neurones entraîné sur des images en lumière visible reconnaît les motifs imprimés, mais il ne peut pas vérifier les éléments de sécurité bancaire infalsifiables. Pour authentifier un vrai billet, il faudrait lui adjoindre du matériel optique spécifique :
+\begin{itemize}
+    \item Un éclairage ultraviolet (UV) pour révéler les fibres fluorescentes.
+    \item Un éclairage infrarouge (IR) pour vérifier les encres métamères.
+    \item Un capteur magnétique pour détecter le fil métallique de sécurité.
 \end{itemize}
 
-\subsection{Protection de la Vie Privée et Souveraineté Numérique}
-L'architecture proposée traite les images en mémoire vive volatile locale (\textit{edge computing}) sans aucun transfert télémétrique vers un serveur cloud tiers. Cette disposition garantit :
+\subsection{Vie privée et fonctionnement local}
+Le modèle développé fonctionne intégralement en local sur l'appareil. Aucune photo n'est transmise sur Internet ou enregistrée sur un serveur externe. Cette caractéristique garantit :
 \begin{itemize}
-    \item Le strict respect de la vie privée des commerçants et clients (aucun stockage de visages ou de données géolocalisées).
-    \item Une résilience totale face aux coupures fréquentes de réseau Internet à Goma.
+    \item La protection de la vie privée des commerçants et des clients.
+    \item La disponibilité continue du système, même en cas de coupure de réseau ou d'absence de connexion Internet.
 \end{itemize}
 
-\section{Conclusion \& Perspectives}
-Ce projet intégrateur démontre avec éclat la puissance de la démarche d'ingénieur en vision par ordinateur appliquée aux problématiques concrètes de la RDC. En articulant une analyse rigoureuse des descripteurs classiques (SVM à $89{,}36\,\%$) et l'excellence du Transfer Learning (ResNet-18 à $100{,}00\,\%$), nous avons conçu une solution robuste, sobre ($122$ ms) et directement déployable. 
+\section{Conclusion}
+Ce projet intégrateur a permis de mettre en pratique l'ensemble de la démarche du cours de Traitement d'Images, depuis la collecte et l'annotation rigoureuse des données sur le terrain jusqu'au déploiement d'un pipeline d'inférence rapide.
 
-Les perspectives de développement incluent l'extension du modèle aux coupures complémentaires (100~FC, 200~FC, 5\,000~FC, 10\,000~FC et 20\,000~FC) ainsi que son portage sur microcontrôleur embarqué (ESP32-CAM ou Raspberry Pi Zero) couplé à une synthèse vocale en langues locales (Swahili et Lingala) au service de l'inclusion financière universelle.
+La comparaison méthodique entre une baseline classique à base de couleurs ($89{,}36\,\%$) et le modèle CNN ResNet-18 ($100{,}00\,\%$) démontre l'apport décisif du Transfer Learning pour résoudre les cas d'ambiguïté visuelle sur des billets usés. Avec un temps de calcul de 122 ms sur CPU et un seuil de sécurité en cas de doute, la solution constitue une base solide pour un déploiement pratique sur mobile ou boîtier embarqué à destination des commerces locaux.
 
 \end{document}
