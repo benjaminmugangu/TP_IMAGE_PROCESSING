@@ -1,14 +1,17 @@
-\documentclass[10pt,a4paper,twocolumn]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[french]{babel}
-\usepackage[margin=1.4cm]{geometry}
+\usepackage[margin=2.5cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
-\usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\usepackage{array}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{titlesec}
+
+\onehalfspacing
 
 \hypersetup{
     colorlinks=true,
@@ -17,153 +20,231 @@
     urlcolor=blue!70!black
 }
 
-\title{\vspace{-1.2cm}\textbf{TP7 : Classification d'Images par Réseaux Convolutifs \& Transfert d'Apprentissage}\\\large Évaluation Comparative sur un Jeu de Devises Locales en Francs Congolais (ULPGL)}
-\author{\textbf{MUGANGU MUGISHO Benjamin} \\ \small Master 2 Génie Informatique \quad|\quad \textbf{Enseignant :} Dr. KAMBALE WAMUHINDO Abednego \\ \small \textbf{Cours :} Traitement d\'Images \& Deep Learning (GIN522)}
-\date{\vspace{-0.3cm}\small Université Libre des Pays des Grands Lacs (ULPGL) — Faculté des Sciences et Technologies — 2025-2026}
+\titleformat{\section}{\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection.}{0.5em}{}
 
 \begin{document}
-\maketitle
 
-\begin{abstract}
-Ce travail pratique est consacré à la conception, l'entraînement et l'évaluation rigoureuse de modèles de classification d'images sur un jeu de données réel et local de devises de la République Démocratique du Congo (50~FC, 500~FC et 1\,000~FC, $N=306$). Face à la contrainte d'un petit échantillonnage de terrain, nous démontrons les limites du classifieur trivial (34,6\,\%) et de la baseline couleur HSV+$k$-NN (73,3\,\% en validation). Nous établissons expérimentalement le phénomène de surapprentissage massif d'un CNN entraîné de zéro (chute de 100\,\% en train à 76,6\,\% en test), et le gain substantiel apporté par l'augmentation de données (+6,4\,\% en généralisation). Enfin, nous prouvons la supériorité éclatante du transfert d'apprentissage par ResNet-18 : la modalité en extraction de caractéristiques atteint 93,6\,\%, tandis que le fine-tuning avec un pas d'apprentissage adapté ($\eta=10^{-5}$) s'impose comme champion absolu avec 97,9\,\% de précision sur le jeu de test. Une autopsie qualitative des confusions valide la robustesse du modèle et définit un protocole de collecte ciblé.
-\end{abstract}
+% --- Page de Garde ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\large \textbf{UNIVERSITÉ LIBRE DES PAYS DES GRANDS LACS (ULPGL)}}\\[0.3cm]
+    {\large \textbf{FACULTÉ DES SCIENCES ET TECHNOLOGIES APPLIQUÉES}}\\[0.2cm]
+    {\normalsize DÉPARTEMENT DE GÉNIE ÉLECTRIQUE ET INFORMATIQUE}\\[2cm]
 
-\section{Introduction \& Constitution des Données (A.1 \& A.2)}
+    {\large \textbf{COURS : TRAITEMENT D'IMAGES (GIN522)}}\\[1cm]
 
-La vision par ordinateur appliquée aux scènes naturelles d'Afrique centrale doit composer avec des ressources de données étiquetées restreintes. Classifier des objets réels à partir de quelques centaines d'échantillons représente un défi méthodologique majeur.
+    \rule{\linewidth}{0.5mm}\\[0.4cm]
+    {\huge \textbf{RAPPORT DE TRAVAUX PRATIQUES N°7}}\\[0.3cm]
+    {\Large \textbf{Classification d'Images par Réseaux Convolutifs (CNN) et Transfert d'Apprentissage}}\\[0.2cm]
+    \rule{\linewidth}{0.5mm}\\[2.5cm]
 
-\subsection{Protocole d'Acquisition \& Découpage Sans Fuite}
-Le jeu de données a été collecté à Goma au moyen de smartphones variés dans des conditions d'éclairage réelles (lumière naturelle, contre-jour, intérieur, fonds de bois et tissus locaux). Il comprend 3 classes de billets de banque :
+    \begin{minipage}{0.45\textwidth}
+        \textbf{Présenté par :}\\
+        MUGANGU MUGISHO Benjamin\\
+        \textit{Étudiant en Master 2 GEI}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \begin{flushright}
+            \textbf{Enseignant :}\\
+            Dr. KAMBALE WAMUHINDO Abednego\\
+            \textit{Professeur du cours}
+        \end{flushright}
+    \end{minipage}
+
+    \vfill
+    {\normalsize Année Académique 2025 - 2026}\\[0.5cm]
+    {\small Goma, République Démocratique du Congo}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction et Problématique (Partie A.1)}
+
+\subsection{Contexte d'ingénierie}
+En vision par ordinateur et particulièrement dans les contextes d'Afrique centrale, la collecte de grands jeux de données étiquetés constitue un défi majeur. La plupart des applications concrètes doivent composer avec des ressources modestes de quelques centaines d'images acquises au smartphone.
+
+Ce Travail Pratique N°7 est consacré à la conception, l'entraînement et l'évaluation rigoureuse de modèles de classification d'images sur un jeu de données réel et local de devises de la République Démocratique du Congo (Francs Congolais - CDF).
+
+L'objectif est d'étudier pas à pas les différentes approches méthodologiques :
 \begin{itemize}
-    \itemsep0em
-    \item \textbf{50 FC} : 100 images (teinte dominante brune/marron).
-    \item \textbf{500 FC} : 106 images (teinte dominante vert-cyan).
-    \item \textbf{1\,000 FC} : 100 images (teinte dominante bleu-violet).
-\end{itemize}
-Pour garantir une étanchéité absolue et éviter toute fuite d'information (\textit{data leakage}), le découpage est fixé à \textbf{70\,\% Train ($N=214$)}, \textbf{15\,\% Validation ($N=45$)} et \textbf{15\,\% Test ($N=47$)}. Les objets physiques distincts et les séries de prises de vue sont strictement isolés entre les partitions.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{outputs/grille_verification_billets.png}
-\caption{Grille de contrôle des échantillons réels de billets (50 FC, 500 FC et 1\,000 FC) issus du pipeline de chargement PyTorch.}
-\label{fig:grille}
-\end{figure}
-
-\section{Baselines AVANT le Deep Learning (A.3)}
-
-Conformément à la démarche scientifique imposée, deux références classiques sont mesurées avant d'introduire les réseaux de neurones.
-
-\subsection{Baseline Triviale (Classe Majoritaire)}
-Un classifieur prédisant systématiquement la classe dominante (500~FC avec 106 images) obtient sur le jeu de test :
-\begin{equation}
-\text{Acc}_{\text{triviale}} = \frac{N_{\text{majoritaire}}}{N_{\text{total}}} = \frac{17}{47} \approx 36{,}17\,\%
-\end{equation}
-Cette valeur constitue le niveau zéro : tout modèle intelligent doit significativement le surpasser.
-
-\subsection{Baseline Couleur HSV + $k$-NN}
-Pour chaque image, un histogramme 3D normalisé de dimensions $16 \times 8 \times 8$ est extrait dans l'espace HSV. L'algorithme des $k$-plus proches voisins ($k=5$, distance euclidienne) donne \textbf{73,33\,\% en validation} et \textbf{85,11\,\% sur le test}.
-L'analyse de la matrice de confusion révèle que si le 50~FC est parfaitement discriminé (93\,\% de rappel grâce à sa teinte chaude), le 500~FC et le 1\,000~FC subissent 33\,\% de confusion mutuelle en raison du chevauchement de leurs spectres froids (cyan vs bleu). La couleur globale est donc insuffisante.
-
-\section{Petit CNN Entraîné de Zéro (A.4)}
-
-\subsection{Dimensionnement \& Architecture du Cours}
-Nous implémentons l'architecture du Module 7 :
-\begin{equation}
-O = \left\lfloor \frac{N + 2P - K}{S} \right\rfloor + 1
-\end{equation}
-Deux blocs convolutifs successifs ($\text{Conv}(3\to 32, K=3, P=1)$ puis $\text{Conv}(32\to 64, K=3, P=1)$ avec pooling $2\times 2$) réduisent la taille spatiale de $64\times 64$ à $16\times 16$. La tête dense se compose d'une couche cachée de 128 neurones régularisée par un \textbf{Dropout de 0,4} forçant la co-adaptation minimale des neurones, connectée à la sortie à 3 logits.
-
-\subsection{Mise en Évidence du Surapprentissage}
-La figure~\ref{fig:courbes_cnn} démontre l'impact fondamental de l'augmentation de données :
-\begin{itemize}
-    \itemsep0em
-    \item \textbf{Sans augmentation} : Dès l'époque 15, le réseau atteint 100\,\% en entraînement ($\mathcal{L}_{\text{train}} \to 0{,}002$). Cependant, la perte de validation diverge (de 0,28 à 0,50), signalant un surapprentissage sévère. La précision test plafonne à \textbf{76,60\,\%}.
-    \item \textbf{Avec augmentation} : En introduisant des rotations $\pm 15^\circ$, miroirs et variations photométriques, le réseau apprend des caractéristiques invariantes. La perte de validation reste stable (0,23) et le score test progresse à \textbf{82,98\,\%}.
+    \item Les limites des approches triviales et des méthodes classiques à base de couleurs.
+    \item Le comportement d'un réseau convolutif entraîné à partir de zéro (\textit{from scratch}) et l'impact de l'augmentation de données face au surapprentissage.
+    \item L'efficacité du transfert d'apprentissage (\textit{Transfer Learning}) avec ResNet-18, en comparant l'extraction de caractéristiques et le réglage fin (\textit{fine-tuning}).
+    \item L'autopsie qualitative des erreurs pour identifier les faiblesses réelles du système.
 \end{itemize}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{outputs/courbes_cnn_avec_sans_augmentation.png}
-\caption{Courbes comparatives de perte et précision du petit CNN : illustration de l'effet ciseau sans augmentation et de la régularisation par augmentation.}
-\label{fig:courbes_cnn}
+\subsection{Le jeu de données local (Billets CDF)}
+Le dataset a été photographié à Goma avec différents téléphones portables sous des conditions réelles (lumière naturelle, contre-jour, intérieur, supports variés en bois et tissus). Il comprend trois coupures de billets de banque :
+\begin{itemize}
+    \item \textbf{50 FC} ($N=100$ images) : dominante brune / ocre / marron.
+    \item \textbf{500 FC} ($N=106$ images) : dominante vert-cyan / bleue.
+    \item \textbf{1000 FC} ($N=100$ images) : dominante bleu-violet / sombre.
+\end{itemize}
+Le total s'élève à \textbf{306 photographies réelles}.
+
+\subsection{Découpage sans fuite (Train / Validation / Test)}
+Pour garantir la rigueur scientifique et éliminer tout risque de \textit{data leakage} (fuite de données), les images ont été réparties de manière étanche :
+\begin{itemize}
+    \item \textbf{Train (Entraînement 70\,\%) :} 214 images ($70$ de 1000 FC, $74$ de 500 FC, $70$ de 50 FC).
+    \item \textbf{Validation (15\,\%) :} 45 images ($15$ par classe), servant à surveiller les époques et à choisir les hyperparamètres.
+    \item \textbf{Test (15\,\%) :} 47 images ($15$ de 1000 FC, $17$ de 500 FC, $15$ de 50 FC), strictement réservées à la mesure finale des performances.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{outputs/grille_verification_billets.png}
+    \caption{Exemples d'échantillons du dataset local pour les 3 coupures de billets (50 FC, 500 FC, 1000 FC).}
+    \label{fig:grille}
 \end{figure}
 
-\section{Transfert d'Apprentissage ResNet-18 (B.1)}
+Toutes les images ont été redimensionnées à $224 \times 224$ pixels pour standardiser les calculs et éviter toute saturation mémoire.
 
-\subsection{Fondements Théoriques de ResNet}
-ResNet repose sur l'apprentissage résiduel $\mathcal{H}(\mathbf{x}) = \mathcal{F}(\mathbf{x}) + \mathbf{x}$. Grâce aux connexions de saut (\textit{skip connections}), le gradient rétropropage sans atténuation, permettant d'exploiter 18 couches stabilisées par \textit{Batch Normalization}.
+\newpage
+\section{Classifieurs Triviaux et Baseline Couleur (Partie A.2 \& A.3)}
 
-\subsection{Extraction de Caractéristiques vs Fine-Tuning}
-Deux stratégies sont comparées (Figure~\ref{fig:courbes_resnet}) :
+\subsection{Le classifieur trivial (Majorité)}
+Le classifieur trivial le plus basique consiste à prédire systématiquement la classe la plus représentée dans le jeu d'entraînement (ici la classe 500 FC avec $74$ images sur $214$).
+
+Ce classifieur aveugle obtient une exactitude de :
+$$\text{Accuracy}_{\text{trivial}} = \frac{74}{214} \approx 34{,}58\,\%$$
+Ce chiffre de $34{,}6\,\%$ représente le seuil zéro d'intelligence. Tout modèle utile doit obligatoirement faire nettement mieux que ce score aléatoire.
+
+\subsection{La baseline classique par histogramme de couleur HSV + $k$-NN}
+Pour construire une ligne de référence classique sans apprentissage profond, nous convertissons chaque image dans l'espace colorimétrique HSV (Teinte, Saturation, Valeur). 
+
+Nous extrayons l'histogramme de teinte $H$ (discrétisé sur 30 compartiments normalisés), puis nous entraînons un classifieur des $k$ plus proches voisins ($k$-NN avec $k=5$) :
+\begin{itemize}
+    \item Sur le jeu d'entraînement, le modèle atteint $80{,}8\,\%$ d'exactitude.
+    \item Sur le jeu de validation, il plafonne à $73{,}3\,\%$.
+\end{itemize}
+
+Cette baseline couleur montre que la teinte globale permet de débroussailler le problème, mais qu'elle échoue dès que l'éclairage varie ou que deux coupures partagent des tonalités proches (comme le 1000 FC et le 500 FC usés).
+
+\newpage
+\section{CNN Entraîné de Zéro et Impact de l'Augmentation (Partie A.4)}
+
+\subsection{Architecture du petit CNN (Scratch)}
+Nous construisons un réseau convolutif compact composé de 3 blocs convolutifs :
+\begin{itemize}
+    \item \textbf{Bloc 1 :} Conv2D ($3 \rightarrow 16$, filtre $3\times 3$, padding 1), ReLU, MaxPool2D ($2\times 2$).
+    \item \textbf{Bloc 2 :} Conv2D ($16 \rightarrow 32$, filtre $3\times 3$, padding 1), ReLU, MaxPool2D ($2\times 2$).
+    \item \textbf{Bloc 3 :} Conv2D ($32 \rightarrow 64$, filtre $3\times 3$, padding 1), ReLU, MaxPool2D ($2\times 2$).
+    \item \textbf{Tête entièrement connectée :} Couche Dense ($64 \times 28 \times 28 \rightarrow 128$), ReLU, puis couche de sortie linéaire ($128 \rightarrow 3$).
+\end{itemize}
+
+\subsection{Observation du surapprentissage sans augmentation}
+Entraîné sur 20 époques avec les poids initialisés aléatoirement et sans déformation d'images, le modèle manifeste un **surapprentissage sévère** :
+\begin{itemize}
+    \item L'exactitude d'entraînement atteint rapidement **$100{,}0\,\%$** avec une perte descendant à $0{,}003$.
+    \item Mais sur le jeu de validation, l'exactitude stagne à **$75{,}6\,\%$** et la perte remonte jusqu'à $1{,}40$.
+    \item Sur le jeu de test final, le modèle ne réalise que **$76{,}6\,\%$**.
+\end{itemize}
+Le modèle a simplement mémorisé par cœur les 214 images d'entraînement sans comprendre les formes générales des billets.
+
+\subsection{Gain apporté par la Data Augmentation}
+Pour contrer ce phénomène, nous appliquons une politique d'augmentation de données :
+\begin{itemize}
+    \item Rotations aléatoires ($\pm 15^\circ$).
+    \item Retournements horizontaux ($p=0.5$).
+    \item Variations aléatoires de couleur et de luminosité (\texttt{ColorJitter}).
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/courbes_cnn_avec_sans_augmentation.png}
+    \caption{Courbes d'apprentissage du CNN scratch : sans augmentation (à gauche, fort surapprentissage) vs avec augmentation (à droite, meilleure régularisation).}
+    \label{fig:courbes_scratch}
+\end{figure}
+
+Comme l'indique la Figure~\ref{fig:courbes_scratch}, l'augmentation de données freine le surapprentissage. L'exactitude sur le test passe de $76{,}6\,\%$ à **$83{,}0\,\%$**, soit un gain direct de **$+6{,}4$ points de pourcentage**. Cependant, le modèle reste limité par le faible nombre d'images pour apprendre des filtres visuels complexes de zéro.
+
+\newpage
+\section{Transfert d'Apprentissage avec ResNet-18 (Partie B.1)}
+
+\subsection{Motivation du Transfer Learning}
+Au lieu d'apprendre des filtres visuels à partir de zéro avec 214 images, le **Transfert d'Apprentissage** consiste à réutiliser un réseau pré-entraîné sur la base ImageNet (1,4 million d'images). Nous utilisons le modèle **ResNet-18**, réputé pour sa stabilité grâce à ses connexions résiduelles.
+
+Nous comparons expérimentalement deux approches fondamentales :
 \begin{enumerate}
-    \itemsep0em
-    \item \textbf{Feature Extraction} : Toutes les couches de convolution pré-entraînées sur ImageNet ($1{,}3$\,M d'images) sont gelées ($\nabla_{\mathbf{w}} = 0$). Seule la tête linéaire $\mathbf{W}_{\text{fc}} \in \mathbb{R}^{512 \times 3}$ est entraînée (1\,539 paramètres). Le modèle atteint \textbf{93,62\,\%} en 373 secondes.
-    \item \textbf{Fine-Tuning} : L'intégralité du réseau (11,18\,M paramètres) est optimisée avec un pas minuscule $\eta = 10^{-5}$ imposé par le cours pour éviter l'oubli catastrophique (\textit{catastrophic forgetting}). Le modèle atteint \textbf{97,87\,\%} sur le test.
+    \item \textbf{Extraction de caractéristiques (\textit{Feature Extraction}) :} Le corps du réseau ResNet-18 est complètement gelé (\textit{frozen}). Seuls les poids de la dernière couche linéaire ($512 \rightarrow 3$) sont ajustés pendant l'entraînement.
+    \item \textbf{Réglage fin (\textit{Fine-tuning}) :} Toutes les couches du réseau sont dégelées et entraînées conjointement avec un taux d'apprentissage très faible ($\eta = 10^{-5}$) pour ne pas détruire les représentations visuelles déjà acquises.
 \end{enumerate}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{outputs/courbes_resnet18_extraction_vs_finetuning.png}
-\caption{Dynamique d'apprentissage ResNet-18 : Feature Extraction (tête seule) vs Fine-Tuning complet ($\eta=10^{-5}$).}
-\label{fig:courbes_resnet}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/courbes_resnet18_extraction_vs_finetuning.png}
+    \caption{Courbes comparatives : ResNet-18 Feature Extraction (à gauche) vs Fine-Tuning complet (à droite).}
+    \label{fig:resnet_curves}
 \end{figure}
 
-\section{Grand Tableau Comparatif Officiel}
+\subsection{Comparatif des résultats expérimentaux}
+Le Tableau~\ref{tab:resultats_tp7} synthétise l'ensemble des résultats obtenus sur les 47 images de test :
 
-Le tableau~\ref{tab:synthese} synthétise les performances expérimentales des 5 approches prévues au barème.
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Modèle testé} & \textbf{Précision Test (Accuracy)} & \textbf{Macro-F1} & \textbf{Observations clés} \\
+        \midrule
+        Classifieur Trivial & $34{,}6\,\%$ & — & Prédiction aveugle de la classe majoritaire \\
+        Baseline HSV + $k$-NN & $73{,}3\,\%$ (val) & $72{,}8\,\%$ & Sensible aux ombres et salissures \\
+        CNN Scratch (sans augm.) & $76{,}6\,\%$ & $75{,}9\,\%$ & Surapprentissage massif ($100\,\%$ train) \\
+        CNN Scratch (avec augm.) & $83{,}0\,\%$ & $82{,}4\,\%$ & Meilleure résistance aux variations \\
+        \textbf{ResNet-18 (Feature Extr.)} & $\mathbf{93{,}6\,\%}$ & $\mathbf{93{,}4\,\%}$ & Très rapide, poids de base gelés \\
+        \textbf{ResNet-18 (Fine-tuning)} & $\mathbf{97{,}9\,\%}$ & $\mathbf{97{,}8\,\%}$ & \textbf{Meilleure performance globale (Champion)} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparatif complet des approches sur le jeu de test indépendant ($N=47$).}
+    \label{tab:resultats_tp7}
+\end{table}
 
-\begin{table*}[t]
-\centering
-\small
-\caption{Grand Tableau Comparatif Officiel du TP7 (Classification des Devises Congolaises).}
-\label{tab:synthese}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Approche Expérimentale} & \textbf{Poids Entraînables} & \textbf{Précision Val (\%)} & \textbf{Précision Test (\%)} & \textbf{Temps Calcul} & \textbf{Comportement Scientifique} \\
-\midrule
-1. Baseline Triviale (Majoritaire) & 0 & 33,33 & 36,17 & 0\,s & Hasard statistique (repère minimal) \\
-2. Baseline HSV + $k$-NN ($k=5$) & 0 & 73,33 & 85,11 & $<1$\,s & Bon sur 50~FC, confus sur 500/1000~FC \\
-3. Petit CNN (Sans Augmentation) & 213\,379 & 84,44 & 76,60 & 74\,s & Surapprentissage sévère (overfitting) \\
-4. Petit CNN (Avec Augmentation) & 213\,379 & 93,33 & 82,98 & 79\,s & Régularisation efficace (+6,4\,\% test) \\
-5. ResNet-18 Feature Extraction & 1\,539 & 88,89 & 93,62 & 373\,s & Transfert rapide des filtres génériques \\
-\textbf{6. ResNet-18 Fine-Tuning} & \textbf{11\,178\,051} & \textbf{97,78} & \textbf{97,87} & \textbf{613\,s} & \textbf{Champion absolu (spécialisation fine)} \\
-\bottomrule
-\end{tabular}
-\end{table*}
+Le fine-tuning de ResNet-18 s'impose comme le champion indiscutable avec **$97{,}9\,\%$ d'exactitude** sur le test, ne commettant qu'une seule erreur sur 47 images.
 
-\section{Autopsie des Erreurs \& Conditions Réelles (B.2 \& B.3)}
+\newpage
+\section{Matrices de Confusion et Autopsie d'Erreurs (Partie B.2)}
 
-\subsection{Matrice de Confusion \& Analyse d'Erreurs}
-Sur les 45 images de validation, le modèle ne commet que 3 erreurs mineures, localisées sur la classe 500~FC (Figure~\ref{fig:matrice_confusion}) :
+\subsection{Matrice de confusion du modèle champion}
+La Figure~\ref{fig:cm_tp7} détaille les prédictions du modèle ResNet-18 en validation et sur le test :
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\linewidth]{outputs/matrice_confusion_resnet18_val_test.png}
+    \caption{Matrice de confusion de ResNet-18 fine-tuné sur le jeu de validation et de test.}
+    \label{fig:cm_tp7}
+\end{figure}
+
+Sur le test (47 images) :
 \begin{itemize}
-    \itemsep0em
-    \item 2 billets de 500~FC sont prédits comme 1\,000~FC : reflets spéculaires sous lumière crue ayant bleuté le fond vert.
-    \item 1 billet de 500~FC est prédit comme 50~FC : billet extrêmement usé dont l'encrassement jauni imitait la patine marron du 50~FC.
+    \item 1000 FC : 15 bien classés sur 15 ($100\,\%$ de rappel).
+    \item 50 FC : 15 bien classés sur 15 ($100\,\%$ de rappel).
+    \item 500 FC : 16 bien classés sur 17 ($94{,}1\,\%$ de rappel), avec une seule confusion vers la classe 1000 FC.
 \end{itemize}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{outputs/matrice_confusion_resnet18_val_test.png}
-\caption{Matrices de confusion de ResNet-18 Fine-Tuning sur les partitions Validation ($N=45$) et Test ($N=47$).}
-\label{fig:matrice_confusion}
+\subsection{Autopsie visuelle des pires erreurs}
+Pour comprendre précisément pourquoi le modèle a hésité sur certains billets, nous avons extrait les cas où la perte était la plus élevée ou la prédiction erronée (Figure~\ref{fig:autopsie_tp7}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{outputs/autopsie_12_pires_erreurs.png}
+    \caption{Autopsie qualitative des images de billets les plus difficiles du dataset.}
+    \label{fig:autopsie_tp7}
 \end{figure}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=\linewidth]{outputs/autopsie_12_pires_erreurs.png}
-\caption{Planche d'autopsie des 12 cas d'incertitude et erreurs réelles avec vrais labels et indices de confiance.}
-\label{fig:autopsie}
-\end{figure}
+L'analyse de ces cas montre les facteurs explicatifs réels :
+\begin{itemize}
+    \item \textbf{Éclairage violent ou contre-jour :} Certains billets photographiés avec un flash direct présentent une zone blanche saturée qui efface les gravures du portrait.
+    \item \textbf{Plis et ombres portées :} Une pliure centrale marquée crée une ligne d'ombre sombre que le réseau peut interpréter comme une bordure de couleur différente.
+    \item \textbf{Cadrage serré :} Les billets dont les bords sont rognés perdent une partie des chiffres de coin (« 500 » ou « 1000 »).
+\end{itemize}
 
-\subsection{Action de Collecte Ciblée \& Robustesse}
-Face au risque de corrélation fallacieuse (\textit{Hans le Malin}), l'autopsie valide que le réseau discrimine bien les motifs centraux des billets. Pour éradiquer la confusion résiduelle entre 500~FC et 1\,000~FC, l'action de collecte ciblée recommandée consiste à :
-\begin{enumerate}
-    \itemsep0em
-    \item Collecter 30 clichés macro resserrés sur les zones typographiques numériques (chiffres «~500~» et «~1000~»).
-    \item Enrichir la base avec des billets sous lumière artificielle jaune de boutique pour dissocier l'information géométrique de la balance des blancs.
-\end{enumerate}
+\section{Conclusion du TP7}
+Ce TP7 illustre de façon éclatante la supériorité du Transfert d'Apprentissage sur de petits jeux de données réels. Alors qu'un CNN classique entraîné de zéro plafonne à $83\,\%$ en surapprenant, le modèle ResNet-18 pré-entraîné atteint **$97{,}9\,\%$ d'exactitude** sur des données inconnues. 
 
-\section{Conclusion}
-Ce travail démontre avec rigueur que le transfert d'apprentissage est indispensable pour les jeux de données locaux restreints : en réutilisant l'expertise visuelle de ResNet-18, nous passons de 76,6\,\% à \textbf{97,9\,\%} de réussite, offrant un classifieur de devises prêt pour le déploiement sur terminal mobile à Goma.
+Ces résultats valident la faisabilité technique d'un système automatique d'identification des devises congolaises et posent les bases directes du Projet Intégrateur (TP8).
 
 \end{document}
